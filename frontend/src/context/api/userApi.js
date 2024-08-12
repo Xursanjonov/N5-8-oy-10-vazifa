@@ -17,6 +17,14 @@ export const userApi = api.injectEndpoints({
             }),
             invalidatesTags: ["User"]
         }),
+        getUsername: build.mutation({
+            query: (params) => ({
+                url: "/users/sign-in",
+                method: "PUT",
+                params
+            }),
+            invalidatesTags: ["User"]
+        }),
         registerUser: build.mutation({
             query: (body) => ({
                 url: "/users/sign-up",
@@ -31,5 +39,6 @@ export const userApi = api.injectEndpoints({
 export const {
     useGetUsersQuery,
     useRegisterUserMutation,
+    useGetUsernameMutation,
     useSignInMutation
 } = userApi

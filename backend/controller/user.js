@@ -2,98 +2,75 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Users, validateUser } from "../models/userSchema.js";
 
-const JWT_SECRET = "iskandar";
+const JWT_SECRET = "Nusratilloh";
 
 class UsersController {
+  // GET profile
   async getProfile(req, res) {
     try {
       let user = await Users.findById(req.user._id);
-      res.status(200).json({
-        msg: "User registered successfully",
-        variant: "success",
-        payload: user,
-      });
-    } catch {
-      res.status(500).json({
-        msg: err.message,
-        variant: "error",
-        payload: null,
-      });
-    }
+      res.status(200).json({ msg: "User registered successfully", variant: "success", payload: user, });
+    } catch { res.status(500).json({ msg: err.message, variant: "error", payload: null, }); }
   }
+  // GET all users search
   async getUserSearch(req, res) {
     try {
       let { value = "", limit = 3 } = req.query
       let text = value.trim()
-      if (!text) {
-        return res.status(400).json({
-          msg: "write something",
-          variant: "error",
-          payload: null,
-        });
-      }
-      const users = await Users.find({
-        $or: [
-          { fname: { $regex: text, $options: "i" } },
-          { username: { $regex: text, $options: "i" } },
-        ],
-      }).limit(limit)
-      if (!users.length) {
-        return res.status(400).json({
-          msg: "user not found",
-          variant: "error",
-          payload: null,
-        });
-      }
-      res.status(200).json({
-        msg: "user found",
-        variant: "success",
-        payload: users,
-      });
-    } catch {
-      res.status(500).json({
-        msg: "server error",
-        variant: "error",
-        payload: null,
-      });
-    }
+      if (!text) { return res.status(400).json({ msg: "write something", variant: "error", payload: null, }); }
+      const users = await Users.find({ $or: [{ fname: { $regex: text, $options: "i" } }, { username: { $regex: text, $options: "i" } },], }).limit(limit)
+      if (!users.length) { return res.status(400).json({ msg: "user not found", variant: "error", payload: null, }); }
+      res.status(200).json({ msg: "user found", variant: "success", payload: users, });
+    } catch { res.status(500).json({ msg: "server error", variant: "error", payload: null, }); }
   }
+  // RESET password
   async resetPassword(req, res) {
     const id = req.user._id;
     console.log(typeof id);
   }
+  // PUT or PATCH update profile
   async updateProfile() {
-
   }
+  // POST sign up or register
   async registerUser(req, res) {
     try {
       const { error } = validateUser(req.body);
-      if (error)
-        return res.status(400).json({
-          msg: error.details[0].message,
-          variant: "error",
-          payload: null,
-        });
+      if (error) return res.status(400).json({
+        msg: error.details[0].message,
+        variant: "error",
+        payload: null,
+      });
       const { username, password } = req.body;
       const existingUser = await Users.findOne({ username });
-      if (existingUser)
-        return res.status(400).json({
-          msg: "User already exists.",
-          variant: "error",
-          payload: null,
-        });
+      if (existingUser) return res.status(400).json({
+        msg: "User already exists.",
+        variant: "error",
+        payload: null,
+      });
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
-      const user = await Users.create({
-        ...req.body,
-        password: hashedPassword,
-      });
-      const token = jwt.sign({ _id: user._id, role: user.role }, JWT_SECRET, {
-        expiresIn: "1h",
-      });
-
+      const user = await Users.create({ ...req.body, password: hashedPassword, });
+      const token = jwt.sign({ _id: existingUser._id }, JWT_SECRET, { expiresIn: "1d" });
       res.status(201).json({
         msg: "User registered successfully",
+        variant: "success",
+        payload: { token, user },
+      });
+    } catch (err) { res.status(500).json({ msg: err.message, variant: "error", payload: null, }); }
+  }
+  // GET userId
+  async getUserId(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id) return res.status(400).json({
+        msg: "user not found",
+        variant: "error",
+        payload: null,
+      });
+      const user = await Users.findById(req.params.id);
+      const token = jwt.sign({ _id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "1h", });
+      res.status(200).json({
+        msg: "User fetched successfully",
         variant: "success",
         payload: { user, token },
       });
@@ -105,32 +82,29 @@ class UsersController {
       });
     }
   }
+  // POST login or sign in
   async loginUser(req, res) {
     const { username, password } = req.body;
-
     const user = await Users.findOne({ username });
-    if (!user)
-      return res.status(400).json({
-        msg: "Invalid username or password.",
-        variant: "error",
-        payload: null,
-      });
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword)
-      return res.status(400).json({
-        msg: "Invalid username or password.",
-        variant: "error",
-        payload: null,
-      });
-    const token = jwt.sign({ _id: user._id, role: user.role }, JWT_SECRET, {
-      expiresIn: "1h",
+    if (!user) return res.status(400).json({
+      msg: "Invalid username or password.",
+      variant: "error",
+      payload: null,
     });
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(400).json({
+      msg: "Invalid username or password.",
+      variant: "error",
+      payload: null,
+    });
+    const token = jwt.sign({ _id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "1h", });
     res.status(200).json({
       msg: "Logged in successfully",
       variant: "success",
       payload: { token, user },
     });
   }
+  // GET all users
   async getAllUsers(req, res) {
     try {
       const users = await Users.find().sort({ createdAt: -1 });
@@ -147,6 +121,7 @@ class UsersController {
       });
     }
   }
+  // PATCH or PUT update user
   async updateUser(req, res) {
     try {
       const { id } = req.params;
@@ -159,8 +134,7 @@ class UsersController {
           payload: null,
         });
 
-      const salt = await bcrypt.genSalt(10);
-      req.body.password = await bcrypt.hash(existingUser.password, salt);;
+      req.body.password = existingUser.password; //
 
       let user = await Users.findByIdAndUpdate(id, req.body, { new: true });
       res.status(200).json({

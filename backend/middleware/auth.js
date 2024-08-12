@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
-const JWT_SECRET = 'iskandar';
+
+const JWT_SECRET = 'Nusratilloh';
 
 export const auth = (req, res, next) => {
   const token = req.header("Authorization")?.split(" ")[1];
@@ -16,7 +17,7 @@ export const auth = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    res.status(401).json({
+    res.status(400).json({
       msg: "Invalid token.",
       variant: "error",
       payload: null,

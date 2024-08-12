@@ -4,7 +4,7 @@ import { logout } from '../slices/authSlice';
 const baseQuery = async (args, api, extraOptions) => {
   const { dispatch } = api
   const rawBaseQuery = fetchBaseQuery({
-    baseUrl: "http://localhost:8000/api",
+    baseUrl: "http://localhost:8001/api",
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("x-auth-token")
       if (token) {

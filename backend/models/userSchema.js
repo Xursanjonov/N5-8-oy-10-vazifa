@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
     url: {
       type: Array,
       required: false,
-      default: [],
+      default: "",
     },
     gender: {
       type: String,
@@ -42,7 +42,6 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      default: "",
     },
     budget: {
       type: Number,
@@ -68,10 +67,10 @@ export const validateUser = (body) => {
     username: Joi.string().required(),
     password: Joi.string().required(),
     age: Joi.number().allow(0),
-    url: Joi.array().allow(""),
+    url: Joi.array(),
     gender: Joi.string().required(),
     isActive: Joi.boolean().allow(true),
-    email: Joi.string().required(),
+    email: Joi.string(),
     budget: Joi.number().required(),
     role: Joi.string().allow("user"),
   });

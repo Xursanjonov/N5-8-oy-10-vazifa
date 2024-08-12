@@ -5,13 +5,13 @@ import { useDispatch } from 'react-redux';
 import { setToken, setUser } from '../../../context/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 const SignIn = () => {
-    const [newUser, setNewUser] = React.useState({ username: 'john112', password: '12345666' })
+    const [newUser, setNewUser] = React.useState({ username: 'johnh', password: '12345678' })
     const [signIn, { data, isSuccess }] = useSignInMutation()
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const handleSubmit = (values) => {
         signIn(values)
-        console.log(values)
+        // console.log(values)
     };
     console.log(data)
 
